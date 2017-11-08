@@ -70,9 +70,7 @@ FROM
         JOIN
     dept_emp ON employees.emp_no = dept_emp.emp_no
         JOIN
-    departments ON dept_emp.dept_no = departments.dept_no
-WHERE
-    dept_name = 'Sales';
+    (select * from departments where dept_name = 'Sales') as dept ON dept_emp.dept_no = dept.dept_no;
 +----------------------+
 | Full name            |
 +----------------------+
@@ -89,13 +87,11 @@ WHERE
 SELECT 
     CONCAT(first_name, ' ', last_name) AS `Full name`
 FROM
-    employees
+    (SELECT * FROM employees WHERE gender = 'M') AS employees
         JOIN
     dept_emp ON employees.emp_no = dept_emp.emp_no
         JOIN
-    departments ON dept_emp.dept_no = departments.dept_no
-WHERE
-    dept_name = 'Finance' AND gender = 'M';
+    (SELECT * FROM departments WHERE dept_name = 'Finance') AS departments  ON dept_emp.dept_no = departments.dept_no;
 +----------------------+
 | Full name            |
 +----------------------+
@@ -112,15 +108,13 @@ WHERE
 SELECT 
     CONCAT(first_name, ' ', last_name) AS `Full name`, salary, salaries.from_date, salaries.to_date
 FROM
-    employees
+    (SELECT * FROM employees WHERE gender = 'F') AS employees 
         JOIN
     dept_emp ON employees.emp_no = dept_emp.emp_no
         JOIN
-    departments ON dept_emp.dept_no = departments.dept_no
+    (SELECT * FROM departments WHERE dept_name = 'Marketing') AS departments ON dept_emp.dept_no = departments.dept_no
          JOIN
-	salaries ON employees.emp_no = salaries.emp_no
-WHERE
-    dept_name = 'Marketing' AND gender = 'F';
+	salaries ON employees.emp_no = salaries.emp_no;
 +---------------------+--------+------------+------------+
 | Full name           | salary | from_date  | to_date    |
 +---------------------+--------+------------+------------+
@@ -169,14 +163,12 @@ WHERE
 
 -- Full names of managers who have been doing the job at least twice
 SELECT 
-    CONCAT(first_name, ' ', last_name) AS `Full name`,
-    dept_manager.*
+    CONCAT(first_name, ' ', last_name) AS `Full name`
 FROM
     employees
         JOIN
-    dept_manager ON employees.emp_no = dept_manager.emp_no
-GROUP BY dept_manager.emp_no
-HAVING COUNT(dept_manager.emp_no) > 1;
+    (SELECT * FROM dept_manager GROUP BY emp_no HAVING COUNT(dept_manager.emp_no) > 1) AS dept_manager
+	  ON employees.emp_no = dept_manager.emp_no;
 Empty set
 
 -- Full names of employees who was paid more than $100000
@@ -185,24 +177,24 @@ SELECT
 FROM
     employees
         JOIN
-    (select * from salaries WHERE salary > 100000) as sal ON employees.emp_no = sal.emp_no
-GROUP BY `Full name`;
-+-----------------+
-| Full name       |
-+-----------------+
-| Aamer Basawa    |
-| Aamer Bridgland |
-| Aamer Burnard   |
-| Aamer Ermel     |
-| Aamer Gyorkos   |
-| Aamer Henseler  |
-| Aamer Heydon    |
+    (select * from salaries WHERE salary > 100000 GROUP BY emp_no) as sal ON employees.emp_no = sal.emp_no;
++------------------------+
+| Full name              |
++------------------------+
+| Kwee Schusler          |
+| Charlene Brattka       |
+| Xinglin Eugenio        |
+| Dung Baca              |
+| Zissis Pintelas        |
+| Zhenbing Perng         |
+| Itzchak Lichtner       |
+| Debatosh Khasidashvili |
 
 -- Names of all departments that have employees paid more than $100000
 SELECT 
     dept_name
 FROM
-    (select * from salaries where salary > 100000) as salaries
+    (select * from salaries WHERE salary > 100000 GROUP BY emp_no) as salaries
         JOIN
     dept_emp ON salaries.emp_no = dept_emp.emp_no
         JOIN
