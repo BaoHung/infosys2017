@@ -135,31 +135,27 @@ FROM
         JOIN
     dept_emp ON emp.emp_no = dept_emp.emp_no
         JOIN
-    departments ON dept_emp.dept_no = departments.dept_no
-        JOIN
-    dept_manager ON departments.dept_no = dept_manager.dept_no
+    dept_manager ON dept_emp.dept_no = dept_manager.dept_no
         JOIN
     employees AS manager ON dept_manager.emp_no = manager.emp_no
-WHERE
-    emp.last_name = manager.last_name
-        AND emp.emp_no != manager.emp_no;
+        AND emp.last_name = manager.last_name
+        AND emp.emp_no != manager.emp_no
 +------------------------+
 | Full name              |
 +------------------------+
-| Masali Butterworth     |
-| Eric Butterworth       |
-| Goncalo Butterworth    |
-| Bouchung Butterworth   |
-| Dante Butterworth      |
-| Danco Butterworth      |
-| Bezalel Butterworth    |
-| Felicidad Butterworth  |
-| Hironobu Butterworth   |
-| Barton Butterworth     |
-| Dinkar Butterworth     |
-| Tetsurou Butterworth   |
-| Mana Butterworth       |
-| Chenxi Butterworth     |
+| Herbert Markovitch     |
+| Zita Markovitch        |
+| Khun Markovitch        |
+| Nalini Markovitch      |
+| Sibyl Markovitch       |
+| JoAnne Markovitch      |
+| Weiru Markovitch       |
+| Kerhong Markovitch     |
+| Baocai Markovitch      |
+| Nobuyoshi Markovitch   |
+| Subbu Markovitch       |
+| Wilmer Minakawa        |
+| Gil Minakawa           |
 
 -- Full names of managers who have been doing the job at least twice
 SELECT 
