@@ -1,0 +1,120 @@
+use employees;
+-- Who have the same name as the managers of the “Finance” department?
+-- Note: There may be more than 1 manager in a department.
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS `Full name`
+FROM
+    employees
+WHERE
+    last_name IN (SELECT 
+            last_name
+        FROM
+            departments
+                JOIN
+            dept_manager ON departments.dept_no = dept_manager.dept_no
+                JOIN
+            employees ON dept_manager.emp_no = employees.emp_no
+        WHERE
+            dept_name = 'Finance');
+
++-------------------------+
+| Full name               |
++-------------------------+
+| Yuping Alpin            |
+| Yinlin Alpin            |
+| Gao Alpin               |
+| Tetsushi Legleitner     |
+| Bokyung Alpin           |
+| Shietung Legleitner     |
+| Ymte Alpin              |
+| Naftali Alpin           |
+| Guther Legleitner       |
+| Kasturi Alpin           |
+
+-- Who in the “Production” department were hired after the promotion of the last manager in that department?
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS `Full name`
+FROM
+    employees
+        JOIN
+    dept_emp ON employees.emp_no = dept_emp.emp_no
+        JOIN
+    departments ON dept_emp.dept_no = departments.dept_no
+WHERE
+    dept_name = 'Production'
+        AND hire_date > (SELECT 
+            MAX(from_date)
+        FROM
+            departments
+                JOIN
+            dept_manager ON departments.dept_no = dept_manager.dept_no
+        WHERE
+            dept_name = 'Production');
+
++----------------------------+
+| Full name                  |
++----------------------------+
+| Suzette Pettey             |
+| Zhenhua Magalhaes          |
+| Shaunak Cullers            |
+| Masali Murrill             |
+| Dietrich DuCasse           |
+| Kazuhito Shiratori         |
+| Aimee Tokunaga             |
+| Ashish Fortenbacher        |
+| Karsten Belinskaya         |
+
+-- Find the average salary of each department, from highest to lowest.
+SELECT 
+    dept_name, avg_salary
+FROM
+    (SELECT 
+        AVG(salary) AS avg_salary, dept_no
+    FROM
+        salaries
+    JOIN dept_emp ON salaries.emp_no = dept_emp.emp_no
+    GROUP BY dept_no) AS dept_sal
+        JOIN
+    departments ON dept_sal.dept_no = departments.dept_no
+GROUP BY departments.dept_no
+ORDER BY avg_salary DESC;
+
++--------------------+------------+
+| dept_name          | avg_salary |
++--------------------+------------+
+| Sales              | 80667.6058 |
+| Marketing          | 71913.2000 |
+| Finance            | 70489.3649 |
+| Research           | 59665.1817 |
+| Production         | 59605.4825 |
+| Development        | 59478.9012 |
+| Customer Service   | 58770.3665 |
+| Quality Management | 57251.2719 |
+| Human Resources    | 55574.8794 |
++--------------------+------------+
+
+-- Find the average salary for each type of Engineer, from highest to lowest.
+SELECT 
+    title, AVG(salary) avg_salary
+FROM
+    titles
+        JOIN
+    salaries ON titles.emp_no = salaries.emp_no
+WHERE
+    title IN (SELECT 
+            title
+        FROM
+            titles
+        WHERE
+            LCASE(title) LIKE '%engineer%'
+        GROUP BY title)
+GROUP BY title
+ORDER BY avg_salary DESC;
+
++--------------------+------------+
+| title              | avg_salary |
++--------------------+------------+
+| Senior Engineer    | 60543.2191 |
+| Engineer           | 59508.0397 |
+| Assistant Engineer | 59304.9863 |
++--------------------+------------+
