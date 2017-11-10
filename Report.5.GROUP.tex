@@ -1,0 +1,149 @@
+USE employees;
+
+-- What is the average salary of each employee?
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS `Full name`,
+    AVG(salary) AS `Average salary`
+FROM
+    salaries
+        JOIN
+    employees on salaries.emp_no = employees.emp_no
+GROUP BY salaries.emp_no;
+
++--------------------+----------------+
+| Full name          | Average salary |
++--------------------+----------------+
+| Georgi Facello     |     75388.9412 |
+| Bezalel Simmel     |     68854.5000 |
+| Parto Bamford      |     43030.2857 |
+| Chirstian Koblick  |     56512.2500 |
+| Kyoichi Maliniak   |     87275.7692 |
+| Anneke Preusig     |     50514.9167 |
+| Tzvetan Zielinski  |     70826.7143 |
+| Saniya Kalloufi    |     49307.6667 |
+
+-- How much was each employee paid in total?
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS `Full name`,
+    SUM(salary) AS `Total salary`
+FROM
+    salaries
+        JOIN
+    employees ON salaries.emp_no = employees.emp_no
+GROUP BY salaries.emp_no;
+
++-------------------+--------------+
+| Full name         | Total salary |
++-------------------+--------------+
+| Georgi Facello    |      1281612 |
+| Bezalel Simmel    |       413127 |
+| Parto Bamford     |       301212 |
+| Chirstian Koblick |       904196 |
+| Kyoichi Maliniak  |      1134585 |
+
+-- Minimum, maximum and total salaries of each department?
+SELECT 
+    dept_name,
+    MIN(salary) AS min_salary,
+    MAX(salary) AS max_salary,
+    SUM(salary) AS total_salary
+FROM
+    salaries
+        JOIN
+    dept_emp ON salaries.emp_no = dept_emp.emp_no
+        JOIN
+    departments ON dept_emp.dept_no = departments.dept_no
+GROUP BY departments.dept_no;
+
++--------------------+------------+------------+--------------+
+| dept_name          | min_salary | max_salary | total_salary |
++--------------------+------------+------------+--------------+
+| Marketing          |      39127 |     145128 |  13725425266 |
+| Finance            |      38812 |     142395 |  11650834677 |
+| Human Resources    |      38735 |     141953 |   9363811425 |
+| Production         |      38623 |     138273 |  41554438942 |
+| Development        |      38849 |     144434 |  48179456393 |
+| Quality Management |      38786 |     132103 |  10865203635 |
+| Sales              |      39169 |     158220 |  40030089342 |
+| Research           |      38851 |     130211 |  11969730427 |
+| Customer Service   |      38836 |     144866 |  13143639841 |
++--------------------+------------+------------+--------------+
+
+-- Which departments have paid more than 20 billion dollars for their employees?
+SELECT 
+    dept_name, SUM(salary) AS total_salary
+FROM
+    salaries
+        JOIN
+    dept_emp ON salaries.emp_no = dept_emp.emp_no
+        JOIN
+    departments ON dept_emp.dept_no = departments.dept_no
+GROUP BY departments.dept_no
+HAVING total_salary > 20000000000;
+
++-------------+--------------+
+| dept_name   | total_salary |
++-------------+--------------+
+| Production  |  41554438942 |
+| Development |  48179456393 |
+| Sales       |  40030089342 |
++-------------+--------------+
+
+-- Total salaries of male employees in each department?
+SELECT 
+    dept_name, SUM(salary)
+FROM
+    employees
+        JOIN
+    salaries ON employees.emp_no = salaries.emp_no
+        JOIN
+    dept_emp ON employees.emp_no = dept_emp.emp_no
+        JOIN
+    departments on departments.dept_no = dept_emp.dept_no
+WHERE gender = 'M'
+GROUP BY dept_emp.dept_no;
+
++--------------------+-------------+
+| dept_name          | SUM(salary) |
++--------------------+-------------+
+| Marketing          |  8352455367 |
+| Finance            |  6940675318 |
+| Human Resources    |  5619533959 |
+| Production         | 24873889749 |
+| Development        | 28961357095 |
+| Quality Management |  6472073211 |
+| Sales              | 24051537190 |
+| Research           |  7174578852 |
+| Customer Service   |  7865587983 |
++--------------------+-------------+
+
+-- Total salaries of department managers for each department, from highest to lowest?
+SELECT 
+    first_name,
+    last_name,
+    dept_name,
+    SUM(salary) AS total_salary
+FROM
+    employees
+        JOIN
+    dept_manager ON employees.emp_no = dept_manager.emp_no
+        JOIN
+    salaries ON dept_manager.emp_no = salaries.emp_no
+        JOIN
+    departments ON dept_manager.dept_no = departments.dept_no
+GROUP BY dept_manager.dept_no
+ORDER BY total_salary DESC;
+
++-------------+--------------+--------------------+--------------+
+| first_name  | last_name    | dept_name          | total_salary |
++-------------+--------------+--------------------+--------------+
+| Peternela   | Onuegbe      | Quality Management |      4162118 |
+| Krassimir   | Wegerle      | Production         |      3374004 |
+| Tonny       | Butterworth  | Customer Service   |      3187661 |
+| Margareta   | Markovitch   | Marketing          |      3093009 |
+| Przemyslawa | Kaelbling    | Sales              |      2915118 |
+| Arie        | Staelin      | Research           |      2558661 |
+| Ebru        | Alpin        | Finance            |      2549372 |
+| Shirish     | Ossenbruggen | Human Resources    |      2098298 |
+| DeForest    | Hagimont     | Development        |      2028376 |
++-------------+--------------+--------------------+--------------+
