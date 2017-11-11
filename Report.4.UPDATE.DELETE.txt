@@ -1,0 +1,121 @@
+/*
+Requirements:
+Due to changes in company’s organization, the following departments are merged:
+	Development (d005) and Research (d008) -> Research and Development(d010)
+	Marketing (d001) and Sales (d007) -> Marketing and Sales (d011)
+*/
+
+/*
+Steps:
+1. Create new rows in table departments:
+	Research and Development(d010)
+	Marketing and Sales (d011)
+2. Update table dept_emp
+	d005 OR d008 -> d010
+    d001 OR d007 -> d011
+3. Update table dept_manager
+	d005 OR d008 -> d010
+    d001 OR d007 -> d011
+4. Delete following rows from table departments:
+	Development (d005) 
+    Research (d008)
+	Marketing (d001) 
+    Sales (d007)
+*/
+
+/*
+Explanation:
+Step 1: Create new tuples in table departments to store new departments.
+Step 2: Update the data indicating which employee is working in which department.
+		Employees will be moved to the new departments according to the changes in the organization.
+Step 3: Update managers of each new department, 
+		assuming that a department may have more than 1 manager since each old department already have a manager.
+Step 4: Delete old data from table departments.
+*/
+
+
+-- ------------- IMPLEMENTATION -------------
+USE employees;
+
+/*
+1. Create new rows in table departments:
+	Research and Development(d010)
+	Marketing and Sales (d011)
+*/
+INSERT INTO departments(dept_no, dept_name) VALUES
+	('d010', 'Research and Development'),
+	('d011', 'Marketing and Sales');
+
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+    
+/*
+2. Update table dept_emp
+	d005 OR d008 -> d010
+    d001 OR d007 -> d011
+    
+    Table dept_emp has PK: dept_no & emp_no
+    One employee might have worked in many department. There might be employees worked in both d005 and d008, 
+		when update to d010, there will be a conflict since there would be 2 rows with the same value of PK.
+
+	One solution for this problem is to update the from_date and to_date of employees who worked in both department.
+    
+    But since the purpose of this labwork is to practice UPDATE and DELETE, to keep things simple, I ignore the above problem and use the IGNORE keyword.
+
+    There will be warnings while executing the following command, those rows with warning will NOT be updated.
+*/
+UPDATE IGNORE dept_emp 
+SET 
+    dept_no = 'd010'
+WHERE
+    dept_no IN ('d005' , 'd008');
+
+Query OK, 101599 rows affected, 5234 warnings (9.73 sec)
+Rows matched: 106833  Changed: 101599  Warnings: 5234
+    
+UPDATE IGNORE dept_emp 
+SET 
+    dept_no = 'd011'
+WHERE
+    dept_no IN ('d001' , 'd007');
+    
+Query OK, 68804 rows affected, 3652 warnings (5.52 sec)
+Rows matched: 72456  Changed: 68804  Warnings: 3652
+
+/*    
+3. Update table dept_manager
+	d005 OR d008 -> d010
+    d001 OR d007 -> d011
+    
+    This step may have a similar problem as explained in step 2, hence the IGNORE keyword.
+*/
+UPDATE IGNORE dept_manager 
+SET 
+    dept_no = 'd010'
+WHERE
+    dept_no IN ('d005' , 'd008');
+
+Query OK, 4 rows affected (0.01 sec)
+Rows matched: 4  Changed: 4  Warnings: 0
+
+UPDATE IGNORE dept_manager 
+SET 
+    dept_no = 'd011'
+WHERE
+    dept_no IN ('d001' , 'd007');
+
+Query OK, 4 rows affected (0.01 sec)
+Rows matched: 4  Changed: 4  Warnings: 0    
+
+/*
+4. Delete following rows from table departments:
+	Development (d005) 
+    Research (d008)
+	Marketing (d001) 
+    Sales (d007)
+*/
+DELETE FROM departments 
+WHERE
+    dept_no IN ('d005' , 'd008', 'd001', 'd007');
+
+Query OK, 4 rows affected (3.57 sec)
