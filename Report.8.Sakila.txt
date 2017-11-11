@@ -1,0 +1,79 @@
+use sakila;
+
+-- List names of all the languages in the database (sorted alphabetically)?
+SELECT 
+    `name`
+FROM
+    `language`
+ORDER BY name;
+
+-- List full names of actors with "GER" in their last name, ordered by their first name
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS `Full name`
+FROM
+    actor
+WHERE
+    UCASE(last_name) LIKE '%GER%';
+
+-- Find all the addresses where postal code starts with "57", and return addresses sorted.
+SELECT 
+    address
+FROM
+    address
+WHERE
+    postal_code LIKE '57%';
+
+-- How many films involve a "DWARF" in their titles?
+SELECT 
+    COUNT(*)
+FROM
+    film
+WHERE
+    UCASE(title) LIKE '%DWARF%';
+
+-- Find full names of actors who played in a film involving ’WAR’ in title and longer than 2.5 hours, along with the title, run length and release year of the movie, sorted by the actors’ last names.
+SELECT
+    CONCAT(first_name, ' ', last_name) AS `Full name`,
+    title,
+    length,
+    release_year
+FROM
+    actor
+        JOIN
+    film_actor ON actor.actor_id = film_actor.actor_id
+        JOIN
+    film ON film_actor.film_id = film.film_id
+WHERE
+    UCASE(title) LIKE '%WAR%'
+        AND length > (2.5 * 60)
+ORDER BY last_name;
+
+-- Find all the film categories in which there are between 55 and 65 films. Return the names of these categories and the number of films per category, sorted by the number of films descending.
+SELECT 
+    category.name, COUNT(film.film_id) AS number_of_film
+FROM
+    film
+        JOIN
+    film_category ON film.film_id = film_category.film_id
+        JOIN
+    category ON film_category.category_id = category.category_id
+GROUP BY category.category_id
+HAVING number_of_film BETWEEN 55 AND 65
+ORDER BY number_of_film DESC;
+
+-- In how many film categories is the average difference between the film replacement cost and the rental rate larger than 17?
+SELECT 
+--    COUNT()
+FROM
+    film
+        JOIN
+    film_category ON film.film_id = film_category.film_id
+        JOIN
+    category ON film_category.category_id = category.category_id
+GROUP BY category.category_id
+HAVING ABS((AVG(replacement_cost) - AVG(rental_rate))) > 17;
+ 
+-- Find the address district(s) name(s) such that the minimal postal code in the district(s) is maximal over all the districts.
+-- Make sure your query ignores empty postal codes and district names.
+ 
+-- I Find the names (first and last) of all the actors and customers whose first name is the same as the first name of the actor with ID 101 (exclude the actor with ID 101)

@@ -1,6 +1,22 @@
 use employees;
+
 -- Who have the same name as the managers of the “Finance” department?
--- Note: There may be more than 1 manager in a department.
+CREATE OR REPLACE VIEW DeptManagerInfo AS
+    SELECT 
+        employees.emp_no,
+        first_name,
+        last_name,
+        dept_manager.dept_no,
+        departments.dept_name,
+        dept_manager.from_date,
+        dept_manager.to_date
+    FROM
+        dept_manager
+            JOIN
+        employees ON dept_manager.emp_no = employees.emp_no
+            JOIN
+        departments ON dept_manager.dept_no = departments.dept_no;
+        
 SELECT 
     CONCAT(first_name, ' ', last_name) AS `Full name`
 FROM
@@ -9,11 +25,7 @@ WHERE
     last_name IN (SELECT 
             last_name
         FROM
-            departments
-                JOIN
-            dept_manager ON departments.dept_no = dept_manager.dept_no
-                JOIN
-            employees ON dept_manager.emp_no = employees.emp_no
+            DeptManagerInfo
         WHERE
             dept_name = 'Finance');
 
@@ -30,6 +42,10 @@ WHERE
 | Naftali Alpin           |
 | Guther Legleitner       |
 | Kasturi Alpin           |
+| Mori Alpin              |
+| Aran Legleitner         |
+| Marko Alpin             |
+
 
 -- Who in the “Production” department were hired after the promotion of the last manager in that department?
 SELECT 
@@ -45,41 +61,36 @@ WHERE
         AND hire_date > (SELECT 
             MAX(from_date)
         FROM
-            departments
-                JOIN
-            dept_manager ON departments.dept_no = dept_manager.dept_no
+            DeptManagerInfo
         WHERE
             dept_name = 'Production');
 
-+----------------------------+
-| Full name                  |
-+----------------------------+
-| Suzette Pettey             |
-| Zhenhua Magalhaes          |
-| Shaunak Cullers            |
-| Masali Murrill             |
-| Dietrich DuCasse           |
-| Kazuhito Shiratori         |
-| Aimee Tokunaga             |
-| Ashish Fortenbacher        |
-| Karsten Belinskaya         |
++-------------------+
+| Full name         |
++-------------------+
+| Suzette Pettey    |
+| Zhenhua Magalhaes |
+| Shaunak Cullers   |
+| Masali Murrill    |
+| Dietrich DuCasse  |
+
 
 -- Find the average salary of each department, from highest to lowest.
-SELECT 
-    dept_name, avg_salary
-FROM
-    (SELECT 
-        AVG(salary) AS avg_salary, dept_no
+CREATE OR REPLACE VIEW avg_salaries AS
+    SELECT 
+        emp_no, AVG(salary) AS salary
     FROM
-        (SELECT 
-			emp_no, AVG(salary) AS salary
-		FROM
-			salaries
-		GROUP BY emp_no) AS salaries
-    JOIN dept_emp ON salaries.emp_no = dept_emp.emp_no
-    GROUP BY dept_no) AS dept_sal
+        salaries
+    GROUP BY emp_no;
+
+SELECT 
+    dept_name, AVG(salary) avg_salary
+FROM
+    departments
         JOIN
-    departments ON dept_sal.dept_no = departments.dept_no
+    dept_emp ON departments.dept_no = dept_emp.dept_no
+        JOIN
+    avg_salaries ON dept_emp.emp_no = avg_salaries.emp_no
 GROUP BY departments.dept_no
 ORDER BY avg_salary DESC;
 
@@ -97,18 +108,13 @@ ORDER BY avg_salary DESC;
 | Human Resources    | 53214.29085744 |
 +--------------------+----------------+
 
-
--- Find the average salary for each type of Engineer, from highest to lowest.
+-- Find the average salary for each type of Engineer, from highest to lowest
 SELECT 
     title, AVG(salary) avg_salary
 FROM
     titles
         JOIN
-    (SELECT 
-        emp_no, AVG(salary) AS salary
-    FROM
-        salaries
-    GROUP BY emp_no) AS salaries ON titles.emp_no = salaries.emp_no
+    avg_salaries ON titles.emp_no = avg_salaries.emp_no
 WHERE
     title IN (SELECT 
             title

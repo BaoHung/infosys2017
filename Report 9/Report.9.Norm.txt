@@ -1,0 +1,11 @@
+1. Which normal form does the employee database satisfy?
+The employee database satisfied the third normal form.
+
+2. Why?
+- The data is stored in a relational Database.
+- The columns contain atomic values.
+- No columns are repeated.
+- Primary Key and Foreign Key are used to split related data (E.g: employees - dept_emp - departments)
+- The non-key columns are depended on the Primary Key.
+- There are no columns transitively dependent on the Primary Keys.
+
