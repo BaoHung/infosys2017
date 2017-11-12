@@ -1,0 +1,177 @@
+/*
+How you made up the structure (those conceptual/logical/physical models)
+
+Analyzing requirements:
+	Tables:
+		Magazines contain title, ISSN, number and year.
+		Articles contain unique title, begin page and end page.
+		Authors contain name, email address and ascription.
+    
+    Relationship:
+		A magazine has many articles, an article is in only one magazine.
+		An author can write many articles, an article can be writren by many authors.
+		The `order` attribute is stored in table article_author to indicate the order of authors appearance in an article.
+
+
+1. Determine concepts that needs to be stored
+	Magazine
+	Article
+	Author
+
+2. Determine attributes of each concept
+	Magazine
+	    title
+	    ISSN
+	    number
+	    year
+	Article
+	    title
+	    begin_page
+	    end_page
+	Author
+		name
+		email
+		ascription
+
+3. Determine links (relationships) between them
+	Magazine - Article (1-n): A magazine has many articles, an article is in only one magazine.
+	Magazine - Author (n-n): An author can write many articles, an article can be writren by many authors.
+
+4. Determine types of each concept attribute
+	Magazine
+	    title VARCHAR(200)
+	    ISSN VARCHAR(45)
+	    number INT
+	    year INT
+	Article
+	    title VARCHAR(200)
+	    begin_page INT
+	    end_page INT
+	Author
+		name VARCHAR(45)
+		email VARCHAR(200)
+		ascription VARCHAR(200)
+
+5. Solve foreign key links
+	Magazine
+		mag_id INT
+	    title VARCHAR(200)
+	    ISSN VARCHAR(45)
+	    number INT
+	    year INT
+	Article
+		article_id INT
+		mag_id INT
+	    title VARCHAR(200)
+	    begin_page INT
+	    end_page INT
+	Author
+		author_id INT
+		name VARCHAR(45)
+		email VARCHAR(200)
+		ascription VARCHAR(200)
+	Article - Author
+		article_id INT
+		author_id INT
+		order INT
+
+6. Implementation (see below)
+*/
+
+/*
+SQL commands to create the database
+DESCRIBE commands and their outputs for all of your tables
+*/
+
+CREATE DATABASE magazine;
+USE magazine ;
+
+CREATE TABLE magazine (
+    mag_id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    ISSN VARCHAR(45) NOT NULL UNIQUE,
+    `number` INT NOT NULL,
+    `year` INT NOT NULL,
+    PRIMARY KEY (mag_id)
+);
+
+
+CREATE TABLE article (
+    article_id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    begin_page INT NOT NULL,
+    end_page INT NOT NULL,
+    mag_id INT NOT NULL,
+    PRIMARY KEY (article_id),
+    FOREIGN KEY (mag_id)
+        REFERENCES magazine.magazine (mag_id)
+);
+
+
+CREATE TABLE author (
+    author_id INT NOT NULL,
+    first_name VARCHAR(45) NOT NULL,
+    last_name VARCHAR(45) NOT NULL,
+    ascription VARCHAR(200),
+    PRIMARY KEY (author_id)
+);
+
+
+CREATE TABLE article_author (
+    article_id INT NOT NULL,
+    author_id INT NOT NULL,
+    `order` INT NOT NULL,
+    PRIMARY KEY (article_id , author_id),
+    FOREIGN KEY (article_id)
+        REFERENCES magazine.article (article_id),
+    FOREIGN KEY (author_id)
+        REFERENCES magazine.author (author_id)
+);
+
+DESCRIBE magazine;
++--------+--------------+------+-----+---------+----------------+
+| Field  | Type         | Null | Key | Default | Extra          |
++--------+--------------+------+-----+---------+----------------+
+| mag_id | int(11)      | NO   | PRI | NULL    | auto_increment |
+| title  | varchar(200) | NO   |     | NULL    |                |
+| ISSN   | varchar(45)  | NO   | UNI | NULL    |                |
+| number | int(11)      | NO   |     | NULL    |                |
+| year   | int(11)      | NO   |     | NULL    |                |
++--------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+
+DESCRIBE article;
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| article_id | int(11)      | NO   | PRI | NULL    | auto_increment |
+| title      | varchar(200) | NO   |     | NULL    |                |
+| begin_page | int(11)      | NO   |     | NULL    |                |
+| end_page   | int(11)      | NO   |     | NULL    |                |
+| mag_id     | int(11)      | NO   | MUL | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+
+DESCRIBE author;
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| author_id  | int(11)      | NO   | PRI | NULL    |       |
+| first_name | varchar(45)  | NO   |     | NULL    |       |
+| last_name  | varchar(45)  | NO   |     | NULL    |       |
+| ascription | varchar(200) | YES  |     | NULL    |       |
++------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+
+DESCRIBE article_author;
++------------+---------+------+-----+---------+-------+
+| Field      | Type    | Null | Key | Default | Extra |
++------------+---------+------+-----+---------+-------+
+| article_id | int(11) | NO   | PRI | NULL    |       |
+| author_id  | int(11) | NO   | PRI | NULL    |       |
+| order      | int(11) | NO   |     | NULL    |       |
++------------+---------+------+-----+---------+-------+
+3 rows in set (0.00 sec)

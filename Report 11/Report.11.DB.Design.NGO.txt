@@ -1,0 +1,249 @@
+/*
+How you made up the structure (those conceptual/logical/physical models)
+
+Analyzing requirements:
+	Tables:
+    	Head Office: ID, address, phone number
+    	City: ID, city name, country, population
+    	Manager (Director of a head office, Person in charge of a project) : first name, last name
+    	Project: code, title, begin date, end date, budget
+    	Action: action name, investment, description
+    Relationship:
+    	One head office is located in one city, one city has (zero to) one head office.
+    	One head office has only one manager as director, one director works in one head office.
+    	One project has one manager as person in charge, one manager can be in charge of many projects.
+    	One head office has many projects, one project belongs to one head office.
+    	One project has many actions, one action belongs to one project.
+    	One action is performed in one city, one city has many actions.
+
+1. Determine concepts that needs to be stored
+	Head Office
+	City
+	Manager (Director of a head office, Person in charge of a project)
+	Project
+	Action
+
+2. Determine attributes of each concept
+	Head Office: 
+	    id 
+	    address 
+	    phone_no
+	City: 
+	    id 
+	    city 
+	    country 
+	    population
+	Manager: 
+	    first_name
+	    last_name
+	Project:
+	    code
+	    title 
+	    begin_date
+	    end_date
+	    budget 
+	Action:
+	    name
+	    investment
+	    description
+
+3. Determine links (relationships) between them
+	Head Office - City (1-1): One head office is located in one city, one city has (zero to) one head office.
+	Head Office - Manager (1-1): One head office has only one manager as director, one director works in one head office.
+	Manager - Project (1-n): One project has one manager as person in charge, one manager can be in charge of many projects.
+	Head Office - Project (1-n): One head office has many projects, one project belongs to one head office.
+	Project - Action (1-n) One project has many actions, one action belongs to one project.
+	City - Action (1-n) One action is performed in one city, one city has many actions.
+
+4. Determine types of each concept attribute
+	Head Office: 
+	    id INT 
+	    address VARCHAR(200)
+	    phone_no VARCHAR(20)
+	City: 
+	    id INT
+	    city VARCHAR(45)
+	    country VARCHAR(45)
+	    population INT
+	Manager: 
+	    first_name VARCHAR(45)
+	    last_name VARCHAR(45)
+	Project:
+	    code VARCHAR(45) 
+	    title VARCHAR(200)
+	    begin_date DATE 
+	    end_date DATE 
+	    budget INT
+	Action:
+	    name VARCHAR(45) 
+	    investment INT 
+	    description VARCHAR(200)
+
+5. Solve foreign key links
+	Head Office: 
+	    id INT 
+	    address VARCHAR(200)
+	    phone_no VARCHAR(20)
+		city.id
+		manager.id
+	City: 
+	    id INT
+	    city VARCHAR(45)
+	    country VARCHAR(45)
+	    population INT
+	Manager: 
+	    id INT
+	    first_name VARCHAR(45)
+	    last_name VARCHAR(45)
+	Project:
+	    id INT
+	    code VARCHAR(45) 
+	    title VARCHAR(200)
+	    begin_date DATE 
+	    end_date DATE 
+	    budget INT 
+		manager.id
+	    head_office.id
+	Action:
+	    id INT
+	    name VARCHAR(45) 
+	    investment INT 
+	    description VARCHAR(200)
+	    city.id
+	    project.id
+
+6. Implementation (see below)
+*/
+
+/*
+SQL commands to create the database
+DESCRIBE commands and their outputs for all of your tables
+*/
+
+CREATE DATABASE NGO;
+USE NGO ;
+
+CREATE TABLE city (
+    id INT NOT NULL AUTO_INCREMENT,
+    city VARCHAR(45) NOT NULL UNIQUE,
+    country VARCHAR(45) NOT NULL,
+    population INT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE manager (
+    id INT NOT NULL AUTO_INCREMENT,
+    first_name VARCHAR(45) NOT NULL,
+    last_name VARCHAR(45) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE head_office (
+    id INT NOT NULL AUTO_INCREMENT,
+    city_id INT NOT NULL UNIQUE,
+    director_id INT NOT NULL,
+    address VARCHAR(200) NOT NULL,
+    phone_no VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (city_id)
+        REFERENCES city (id),
+    FOREIGN KEY (director_id)
+        REFERENCES manager (id)
+);
+
+CREATE TABLE project (
+    id INT NOT NULL AUTO_INCREMENT,
+    poc_id INT NOT NULL,
+    head_office_id INT NOT NULL,
+    code VARCHAR(45) NOT NULL UNIQUE,
+    title VARCHAR(200) NOT NULL,
+    begin_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    budget INT NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (poc_id)
+        REFERENCES manager (id),
+    FOREIGN KEY (head_office_id)
+        REFERENCES head_office (id)
+);
+
+CREATE TABLE `action` (
+    id INT NOT NULL AUTO_INCREMENT,
+    city_id INT NOT NULL,
+    project_id INT NOT NULL,
+    name VARCHAR(45) NOT NULL,
+    investment INT NOT NULL,
+    description VARCHAR(200) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (city_id)
+        REFERENCES city (id),
+    FOREIGN KEY (project_id)
+        REFERENCES project (id)
+);
+
+
+DESCRIBE city;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| id         | int(11)     | NO   | PRI | NULL    | auto_increment |
+| city       | varchar(45) | NO   | UNI | NULL    |                |
+| country    | varchar(45) | NO   |     | NULL    |                |
+| population | int(11)     | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+
+DESCRIBE manager;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| id         | int(11)     | NO   | PRI | NULL    | auto_increment |
+| first_name | varchar(45) | NO   |     | NULL    |                |
+| last_name  | varchar(45) | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+
+DESCRIBE head_office;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| id          | int(11)      | NO   | PRI | NULL    | auto_increment |
+| city_id     | int(11)      | NO   | UNI | NULL    |                |
+| director_id | int(11)      | NO   | MUL | NULL    |                |
+| address     | varchar(200) | NO   |     | NULL    |                |
+| phone_no    | varchar(20)  | NO   |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+
+DESCRIBE project;
++----------------+--------------+------+-----+---------+----------------+
+| Field          | Type         | Null | Key | Default | Extra          |
++----------------+--------------+------+-----+---------+----------------+
+| id             | int(11)      | NO   | PRI | NULL    | auto_increment |
+| poc_id         | int(11)      | NO   | MUL | NULL    |                |
+| head_office_id | int(11)      | NO   | MUL | NULL    |                |
+| code           | varchar(45)  | NO   | UNI | NULL    |                |
+| title          | varchar(200) | NO   |     | NULL    |                |
+| begin_date     | date         | NO   |     | NULL    |                |
+| end_date       | date         | NO   |     | NULL    |                |
+| budget         | int(11)      | NO   |     | NULL    |                |
++----------------+--------------+------+-----+---------+----------------+
+8 rows in set (0.00 sec)
+
+
+DESCRIBE `action`;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| id          | int(11)      | NO   | PRI | NULL    | auto_increment |
+| city_id     | int(11)      | NO   | MUL | NULL    |                |
+| project_id  | int(11)      | NO   | MUL | NULL    |                |
+| name        | varchar(45)  | NO   |     | NULL    |                |
+| investment  | int(11)      | NO   |     | NULL    |                |
+| description | varchar(200) | NO   |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+6 rows in set (0.00 sec)
